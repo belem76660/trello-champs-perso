@@ -1,13 +1,14 @@
 # Power-Up Trello — Champs personnalisés
 
-Ce Power-Up ajoute 4 champs personnalisés à chaque carte :
+Ce Power-Up ajoute une liste de champs personnalisés configurable, par board. Depuis la version 2 :
 
-- **Texte** (libre)
-- **Nombre**
-- **Case à cocher**
-- **Liste déroulante** (options et couleurs configurables, ex: Priorité Haute/Moyenne/Basse)
+- **Nombre illimité de champs**, ajoutés un par un depuis les réglages du board ("Champs personnalisés" dans la barre du board, ou icône ⚙️ des Power-Ups).
+- **4 types au choix** pour chaque champ : Texte, Nombre, Case à cocher, Liste déroulante (options et couleurs personnalisables).
+- Sur chaque carte, chaque champ peut être **Annulé** (efface sa valeur) ou **Barré** (marque la valeur comme rayée, tout en la conservant) — deux boutons dédiés dans le popup d'édition de carte.
 
-Les valeurs apparaissent en badge sur la face de la carte, dans le détail de la carte (cliquable pour éditer), et sont modifiables via un bouton "Champs personnalisés" dans la carte. Les libellés des champs et les options de la liste déroulante se configurent via le bouton du même nom dans la barre du board, ou via l'icône ⚙️ des Power-Ups.
+Les valeurs apparaissent en badge sur la face de la carte, dans le détail de la carte (cliquable pour éditer), et sont modifiables via un bouton "Champs personnalisés" dans la carte. Un champ barré s'affiche avec un style rayé (y compris dans les badges, via un caractère Unicode de superposition puisque Trello n'autorise que du texte brut dans les badges).
+
+Les boards utilisant l'ancienne version (v1, 4 champs fixes) sont migrés automatiquement à la première ouverture : rien à faire, l'ancienne configuration est reprise telle quelle sous forme de 4 champs modifiables/supprimables individuellement.
 
 ## Fichiers
 

@@ -5,34 +5,41 @@
   <script src="https://p.trellocdn.com/power-up.min.js"></script>
   <style>
     body { font-family: -apple-system, Helvetica, Arial, sans-serif; padding: 12px; font-size: 13px; margin:0; }
-    label { display:block; margin-top:12px; font-weight:600; }
-    input[type=text], input[type=number], select { width:100%; padding:6px; margin-top:4px; box-sizing:border-box; font-size:13px; }
-    .checkbox-row { display:flex; align-items:center; margin-top:14px; }
-    .checkbox-row input { margin-right:8px; width:auto; }
-    button { margin-top:18px; width:100%; padding:8px; background:#0079bf; color:#fff; border:none; border-radius:3px; cursor:pointer; font-size:14px; }
-    button:hover { background:#026aa7; }
+
+    .field-row { border:1px solid #dfe1e6; border-radius:4px; padding:8px 10px; margin-top:10px; background:#fafbfc; }
+    .field-row-top { display:flex; align-items:center; justify-content:space-between; gap:6px; }
+    .field-row-top .label { font-weight:600; }
+    .field-actions { display:flex; gap:4px; flex-shrink:0; }
+    .field-actions button { font-size:11px; padding:3px 7px; border:1px solid #ccc; border-radius:3px; background:#eee; cursor:pointer; white-space:nowrap; }
+    .field-actions button:hover { background:#dfe6ec; }
+    .field-actions button.active { background:#ffe0b3; border-color:#e0a458; }
+
+    .field-input-wrap { margin-top:6px; }
+    input[type=text], input[type=number], select { width:100%; padding:6px; box-sizing:border-box; font-size:13px; }
+    .checkbox-line { display:flex; align-items:center; gap:8px; margin-top:6px; }
+    .checkbox-line input { width:auto; }
+
+    .field-row.struck .label,
+    .field-row.struck .checkbox-line label { text-decoration: line-through; opacity: 0.55; }
+    .field-row.struck input,
+    .field-row.struck select { text-decoration: line-through; opacity: 0.55; background:#f0f0f0; }
+
+    #no-fields { color:#5e6c84; }
+
+    #save-btn { margin-top:18px; width:100%; padding:8px; background:#0079bf; color:#fff; border:none; border-radius:3px; cursor:pointer; font-size:14px; }
+    #save-btn:hover { background:#026aa7; }
   </style>
 </head>
 <body>
-  <form id="fields-form">
-    <label id="text-label" for="text-input">Texte</label>
-    <input type="text" id="text-input">
+  <div id="no-fields" style="display:none;">
+    Aucun champ personnalisé n'est configuré pour ce board.<br>
+    Ouvrez "Champs personnalisés" depuis la barre du board pour en ajouter.
+  </div>
 
-    <label id="number-label" for="number-input">Nombre</label>
-    <input type="number" id="number-input">
+  <div id="fields-container"></div>
 
-    <div class="checkbox-row">
-      <input type="checkbox" id="checkbox-input">
-      <label id="checkbox-label" for="checkbox-input" style="margin:0;">Case à cocher</label>
-    </div>
+  <button type="button" id="save-btn">Enregistrer</button>
 
-    <label id="dropdown-label" for="dropdown-input">Liste déroulante</label>
-    <select id="dropdown-input">
-      <option value="">-- Aucun --</option>
-    </select>
-
-    <button type="submit">Enregistrer</button>
-  </form>
   <script src="./fields.js"></script>
 </body>
 </html>

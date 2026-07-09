@@ -1,14 +1,16 @@
 /* global TrelloPowerUp */
 
 // ---------------------------------------------------------------------
-// Power-Up "Champs personnalisés" : ajoute 4 champs par carte
-// (texte, nombre, case à cocher, liste déroulante) stockés au niveau
-// "shared" (visibles par tous les membres du board).
+// Power-Up "Champs personnalisés" v2 : liste de champs configurable par
+// board (nombre illimité, type au choix : texte / nombre / case à cocher /
+// liste déroulante). Sur chaque carte, chaque champ peut être annulé
+// (valeur effacée) ou barré (marqué visuellement comme rayé, valeur
+// conservée).
 // ---------------------------------------------------------------------
 
 var WHITE_ICON = './icon-white.svg';
 
-var DEFAULT_CONFIG = {
+var DEFAULT_LEGACY_CONFIG = {
   textLabel: 'Texte',
   numberLabel: 'Nombre',
   checkboxLabel: 'Case à cocher',
@@ -20,31 +22,65 @@ var DEFAULT_CONFIG = {
   ]
 };
 
-var DEFAULT_VALUES = { text: '', number: '', checkbox: false, dropdown: '' };
-
-function getFieldConfig(t) {
-  return t.get('board', 'shared', 'fieldConfig').then(function (config) {
-    return config || DEFAULT_CONFIG;
+// Récupère la liste des champs définis pour le board. Si l'ancien format
+// (v1, un seul jeu de 4 champs fixes) est détecté et qu'aucune liste v2
+// n'existe encore, il est converti automatiquement.
+function getFieldDefs(t) {
+  return t.get('board', 'shared', 'fieldDefs').then(function (defs) {
+    if (defs && defs.length) return defs;
+    return t.get('board', 'shared', 'fieldConfig').then(function (oldConfig) {
+      if (!oldConfig) return [];
+      var cfg = oldConfig || DEFAULT_LEGACY_CONFIG;
+      return [
+        { id: 'text', type: 'text', label: cfg.textLabel || 'Texte' },
+        { id: 'number', type: 'number', label: cfg.numberLabel || 'Nombre' },
+        { id: 'checkbox', type: 'checkbox', label: cfg.checkboxLabel || 'Case à cocher' },
+        { id: 'dropdown', type: 'dropdown', label: cfg.dropdownLabel || 'Liste déroulante', options: cfg.dropdownOptions || [] }
+      ];
+    });
   });
 }
 
 function getFieldValues(t) {
   return t.get('card', 'shared', 'fieldValues').then(function (values) {
-    return values || DEFAULT_VALUES;
+    return values || {};
   });
 }
 
-function findOption(config, label) {
-  return (config.dropdownOptions || []).filter(function (o) {
+function findOption(fieldDef, label) {
+  return (fieldDef.options || []).filter(function (o) {
     return o.label === label;
   })[0];
+}
+
+// true si le champ n'a pas de valeur significative à afficher
+function isEmpty(type, value) {
+  if (value === undefined || value === null) return true;
+  if (type === 'checkbox') return value !== true;
+  return value === '';
+}
+
+// Simule un texte barré en insérant un caractère Unicode "combining long
+// stroke overlay" après chaque caractère (les badges Trello n'acceptent
+// que du texte brut, pas de CSS).
+function strike(str) {
+  return String(str).split('').map(function (c) { return c + '̶'; }).join('');
+}
+
+function badgeColorFor(fieldDef, entry) {
+  if (fieldDef.type === 'dropdown') {
+    var opt = findOption(fieldDef, entry.value);
+    return opt ? opt.color : 'light-gray';
+  }
+  if (fieldDef.type === 'checkbox') return 'green';
+  return null;
 }
 
 function openFieldsPopup(t) {
   return t.popup({
     title: 'Modifier les champs personnalisés',
     url: './fields.html',
-    height: 380
+    height: 480
   });
 }
 
@@ -52,7 +88,7 @@ function openSettingsPopup(t) {
   return t.popup({
     title: 'Configurer les champs personnalisés',
     url: './settings.html',
-    height: 440
+    height: 500
   });
 }
 
@@ -60,59 +96,53 @@ TrelloPowerUp.initialize({
 
   // Badges affichés sur la face avant de la carte
   'card-badges': function (t) {
-    return Promise.all([getFieldConfig(t), getFieldValues(t)]).then(function (r) {
-      var config = r[0];
-      var values = r[1];
+    return Promise.all([getFieldDefs(t), getFieldValues(t)]).then(function (r) {
+      var fieldDefs = r[0];
+      var fieldValues = r[1];
       var badges = [];
 
-      if (values.dropdown) {
-        var opt = findOption(config, values.dropdown);
-        badges.push({ text: values.dropdown, color: opt ? opt.color : 'light-gray' });
-      }
-      if (values.checkbox) {
-        badges.push({ text: '✓ ' + config.checkboxLabel, color: 'green' });
-      }
-      if (values.text) {
-        badges.push({ text: values.text });
-      }
-      if (values.number !== '' && values.number !== undefined && values.number !== null) {
-        badges.push({ text: String(values.number) });
-      }
+      fieldDefs.forEach(function (fieldDef) {
+        var entry = fieldValues[fieldDef.id] || {};
+        if (isEmpty(fieldDef.type, entry.value)) return;
+
+        var text = (fieldDef.type === 'checkbox') ? fieldDef.label : String(entry.value);
+        var color = entry.struck ? 'light-gray' : badgeColorFor(fieldDef, entry);
+        if (entry.struck) text = strike(text);
+
+        badges.push({ text: text, color: color });
+      });
+
       return badges;
     });
   },
 
   // Badges affichés dans le détail de la carte (cliquables)
   'card-detail-badges': function (t) {
-    return Promise.all([getFieldConfig(t), getFieldValues(t)]).then(function (r) {
-      var config = r[0];
-      var values = r[1];
-      var opt = findOption(config, values.dropdown);
+    return Promise.all([getFieldDefs(t), getFieldValues(t)]).then(function (r) {
+      var fieldDefs = r[0];
+      var fieldValues = r[1];
 
-      return [
-        {
-          title: config.textLabel,
-          text: values.text || '(vide)',
-          callback: openFieldsPopup
-        },
-        {
-          title: config.numberLabel,
-          text: (values.number !== '' && values.number !== undefined) ? String(values.number) : '(vide)',
-          callback: openFieldsPopup
-        },
-        {
-          title: config.checkboxLabel,
-          text: values.checkbox ? 'Oui' : 'Non',
-          color: values.checkbox ? 'green' : null,
-          callback: openFieldsPopup
-        },
-        {
-          title: config.dropdownLabel,
-          text: values.dropdown || '(non défini)',
-          color: opt ? opt.color : null,
-          callback: openFieldsPopup
+      return fieldDefs.map(function (fieldDef) {
+        var entry = fieldValues[fieldDef.id] || {};
+        var empty = isEmpty(fieldDef.type, entry.value);
+        var text;
+
+        if (empty) {
+          text = '(vide)';
+        } else if (fieldDef.type === 'checkbox') {
+          text = 'Oui';
+        } else {
+          text = String(entry.value);
         }
-      ];
+        if (!empty && entry.struck) text = strike(text);
+
+        return {
+          title: fieldDef.label,
+          text: text,
+          color: empty ? null : (entry.struck ? 'light-gray' : badgeColorFor(fieldDef, entry)),
+          callback: openFieldsPopup
+        };
+      });
     });
   },
 
