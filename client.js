@@ -80,7 +80,8 @@ function openFieldsPopup(t) {
   return t.popup({
     title: 'Modifier les champs personnalisés',
     url: './fields.html',
-    height: 480
+    height: 480,
+    width: 400
   });
 }
 
@@ -88,7 +89,8 @@ function openSettingsPopup(t) {
   return t.popup({
     title: 'Configurer les champs personnalisés',
     url: './settings.html',
-    height: 500
+    height: 500,
+    width: 400
   });
 }
 

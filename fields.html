@@ -7,8 +7,8 @@
     body { font-family: -apple-system, Helvetica, Arial, sans-serif; padding: 12px; font-size: 13px; margin:0; }
 
     .field-row { border:1px solid #dfe1e6; border-radius:4px; padding:8px 10px; margin-top:10px; background:#fafbfc; }
-    .field-row-top { display:flex; align-items:center; justify-content:space-between; gap:6px; }
-    .field-row-top .label { font-weight:600; }
+    .field-row-top { display:flex; align-items:center; flex-wrap:wrap; justify-content:space-between; gap:6px; }
+    .field-row-top .label { font-weight:600; min-width:0; overflow-wrap:anywhere; }
     .field-actions { display:flex; gap:4px; flex-shrink:0; }
     .field-actions button { font-size:11px; padding:3px 7px; border:1px solid #ccc; border-radius:3px; background:#eee; cursor:pointer; white-space:nowrap; }
     .field-actions button:hover { background:#dfe6ec; }
